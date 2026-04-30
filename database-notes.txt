@@ -1,0 +1,17 @@
+** PostgreSQL 
+
+1. Start -> pg_ctl -D /opt/homebrew/var/postgresql@16 start
+
+2. Stop -> pg_ctl -D /opt/homebrew/var/postgresql@18 stop -m fast
+
+3. Check if db is running (This will show multiple process) -> ps aux | grep postgres
+
+4. Check port (5432 default port for sql): lsof -i :5432
+
+5. We can change port if required from config file (port = 5433) -> nano /opt/homebrew/var/postgresql@18/postgresql.conf
+
+6. Check username : 
+   Connect first -> psql postgres
+   This will show all username -> SELECT current_user
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
