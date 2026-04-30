@@ -12,6 +12,10 @@
 
 6. Check username : 
    Connect first -> psql postgres
-   This will show all username -> SELECT current_user
+   This will show all username -> SELECT current_user;
+
+7. Change/Add password for username : ALTER USER your_username WITH PASSWORD 'mypassword';
+
+
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
