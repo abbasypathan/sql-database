@@ -1,6 +1,8 @@
 ** PostgreSQL 
 
-1. Start -> pg_ctl -D /opt/homebrew/var/postgresql@16 start
+Mac :
+
+1. Start -> pg_ctl -D /opt/homebrew/var/postgresql@18 start
 
 2. Stop -> pg_ctl -D /opt/homebrew/var/postgresql@18 stop -m fast
 
@@ -16,6 +18,224 @@
 
 7. Change/Add password for username : ALTER USER your_username WITH PASSWORD 'mypassword';
 
+------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+Windows :
+
+1. Start -> net start postgresql-x64-18
+
+2. Stop -> net stop postgresql-x64-18
+
+3. Check if db is running (This will show multiple process) -> tasklist | findstr postgres OR sc query postgresql-x64-18
+
+4. Check port (5432 default port for sql): netstat -ano | findstr :5432
+
+Note : Other points are same for both
+
+
+============================================================================================================================================================
+** SQL Statement Fundamentals
+
+- dvdrental.tar file is database exported file which we can import/restore in local database by creating empty dvdrental database
+- DBevear & pgAdmin are the GUI tool which we use for database realted query
+-------------------------------------------------------------
+| Type         | Meaning           | Examples               |
+| ------------ | ----------------- | ---------------------- |
+| DM (DML)     | Data changes      | INSERT, UPDATE, DELETE |
+| DDL          | Structure changes | CREATE, ALTER, DROP    |
+| DCL          | Permissions       | GRANT, REVOKE          |
+-------------------------------------------------------------
+
+- DM/DML (Data Manipulation Language) : Read and modify data inside table
+- DDL (Data Definition Language) : Create or change database structure
+- DCL (Data Control Language) : Used to manage permissions/security
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1. SELECT
+
+- Fetch data from database
+- We can use * for all column to be fetched
+
+Query : SELECT column_name FROM table_name;
+
+Example : SELECT first_name,last_name FROM actor;
+
+Challenge : Send email of promotional information to all the customer
+Query : 
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+2. SELECT DISTINCT
+- Fetch unique value no duplicates
+
+Query : SELECT DISTINCT column_name FROM table_name;
+
+Example : 
+select distinct release_year from film;
+select distinct(release_year) from film;
+select distinct rental_rate from film;
+
+select distinct * from film;
+- As we have primary key all elements are unique so it will be same as fetch all
+
+Challenge : Business want to know what are different rating type are available
+Query : SELECT DISTINCT rating FROM film;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. COUNT
+- COUNT function returns number of row matches conditions
+- () this is mandatory after COUNT function
+
+Query : SELECT COUNT(column_name) FROM table_name;
+
+Example : 
+select * from payment;
+select COUNT(*) from payment;
+select count(amount) from payment;
+select count(distinct amount) from payment;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3. SELECT WHERE 
+- WHERE statement allow to add condition on column to fetch data
+- We can use comparator operator with WHERE clause (=,<,>,<=,>=,!=/<>)
+- Also logical operators (AND, OR, NOT)
+
+Query : SELECT column_name FROM table_name WHERE <multiple conditions>
+
+Example : 
+select * from customer;
+select * from customer where first_name = 'Jared';
+select * from film;
+select * from film where rental_rate > 4;
+select * from film where rental_rate > 4 and replacement_cost >= 19.99;
+select * from film where rental_rate > 4 and replacement_cost >= 19.99 and rating = 'R';
+select count(*) from film where rental_rate > 4 and replacement_cost >= 19.99 and rating = 'R';
+select * from film where rating = 'R' or rating = 'PG-13';
+select * from film where rating != 'R';
+
+Challenge : 
+
+1. Customer name Nancy Thomas forgot her wallet at store we need to sent mail to informer her
+Query : select email from customer where first_name = 'Nancy' and last_name = 'Thomas';
+
+2. Customer want to know about movie Outlaw Hanky
+Query : select description from film where title = 'Outlaw Hanky';
+
+3. Customer is late on their movie return we need to email them at their address '259 Ipoh Drive'. We should also called them
+Query : select phone from address where address = '259 Ipoh Drive';
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+4. ORDER By
+- Order data based on column value either ascending or decending order
+- This should be used at end of query before limit
+- ASC : ascending order
+- DESC : decendeing order 
+- If not provided by default it will return ascending order
+
+Query : SELECT coulmn_name FROM table_name ORBER BY coulmn_name ASC/DESC;
+
+Example : 
+select * from customer;
+select * from customer order by first_name;
+select * from customer order by first_name ASC;
+select * from customer order by first_name DESC;
+select * from customer order by store_id;
+select store_id,first_name,last_name from customer order by store_id;
+select store_id,first_name,last_name from customer order by store_id DESC,first_name asc;
+
+Challenge : It is below with LIMIT statement
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+5. LIMIT
+- It allows to limit number of rows returned in the query results
+- This should be used at end of query
+
+Query : SELECT coulmn_name FROM table_name LIMIT number_of_row;
+
+Example : 
+select * from payment;
+select * from payment limit 5;
+select * from payment order by payment_date limit 5;
+select * from payment where amount != 0.99 order by payment_date limit 5;
+
+Challenge : 
+
+1. We want to reward our customer who first created payments
+Query : select customer_id from payment order by payment_date limit 10;
+
+2. Customer want to rent movie to watch in short break get 5 shortest movie
+Query : select title,length from film order by length limit 5;
+
+3. Customer want to rent movie to watch in short break which having length less than or equal to 50. How many movie we have
+Query : 
+select count(*) from film where length <= 50;
+select count(*) from film where film.length <= 50;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+6. BETWEEN
+- BETWEEN operator can be used to match data against range of values
+- It is inclusive of low and high range which we will provide
+
+Query : SELECT coulmn_name FROM table_name WHERE condiiton_column BETWEEN low_range AND high_range;
+
+Example : 
+select * from payment;
+select * from payment where amount between 8 and 9;
+select * from payment where amount not between 8 and 9;
+select * from payment where payment_date between '2007-02-01' and '2007-02-15';
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+7. IN
+- Check multiple conditions which matches list of values provided IN
+
+Query : SELECT coulmn_name FROM table_name WHERE condiiton_column IN(value1,value2,....);
+
+Example : 
+select * from payment;
+select distinct(amount) from payment order by amount;
+select * from payment where amount in(0.99,1.98,1.99);
+select * from payment where amount not in(0.99,1.98,1.99);
+select * from customer;
+select * from customer where first_name in('John','Jake','Julie');
+select * from customer where first_name not in('John','Jake','Julie');
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+8. LIKE & ILIKE
+- This is for string pattern mating to fetch data
+- LIKE : case sensitive
+- ILIKE : case insensitive 
+- Name start with 'A' (pattern : 'A%')
+- Name ends with 'a' (pattern : '%a')
+- '_' can be used to match all possible numbers. We can use multiple '_'
+- We can combined all above pattern to create any matching patter (example - '_her%')
+
+Query : SELECT coulmn_name FROM table_name WHERE condiiton_column LIKE/ILIKE patter
+
+Example : 
+select * from customer;
+select * from customer where first_name like 'J%';
+select * from customer where first_name like 'J%' and last_name like 'S%';
+select * from customer where first_name ilike 'j%' and last_name ilike 's%';
+select * from customer where first_name ilike '%er%';
+select * from customer where first_name ilike '%er_';
+select * from customer where first_name not ilike '%er_';
+select * from customer where first_name ilike 'A%' order by last_name;
+select * from customer where first_name ilike 'A%' and last_name not like 'B%' order by last_name;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+General Challenges : 
+
+
+============================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
