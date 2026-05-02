@@ -247,9 +247,45 @@ Query : select count(*) from film where title like '%Truman%';
 
 ** GROUP BY Statements
 
-- 
+- GROUP BY allow us to aggregate data
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
+* Aggregate Functions
+- take multiple inputs and return single output by combining results
+- aggregate function calls happen only in SELECT & HAVING clause
+- AVG() : return average value
+- COUNT() : return number of values
+- MAX() : return maximum value
+- MIN() : return minimum value
+- SUM() : return sum of all value
+- ROUNT() : specifies precision after decimal
+
+Query :
+
+select * from film;
+select MIN(replacement_cost) from film;
+select MAX(replacement_cost) from film;
+select MIN(replacement_cost), MAX(replacement_cost) from film;
+
+select COUNT(*) from film;
+
+select AVG(replacement_cost ) from film;
+
+select ROUND(AVG(replacement_cost),2) from film;
+
+select SUM(replacement_cost) from film;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* GROUP BY
+
+- Aggregate result based on selected column
+- GROUP BY must appear after FROM or WHERE statements
+- Selected column must be part of AGG_FUN or GROUP BY clause
+
+Query : SELECT column_name AGG_FUN(data_column) FROM table_name GROUP BY column_name;
+
+Example : 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
