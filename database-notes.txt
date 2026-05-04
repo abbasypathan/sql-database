@@ -472,6 +472,238 @@ where first_name ='Nick' and last_name = 'Wahlberg';
 
 ** Advanced SQL Commands
 
+* Timestampes & Extract
+
+- Different data type which contains different data
+- TIME : only contains time HH:MM:SS
+- DATE : only contains date
+- TIMESTAMP : contains date & time
+- TIMESTAMPTZ : contains date, time & timezone
+
+- Different functions and operations
+- Function : TIMEZONE, CURRENT_TIME, CURRENT_DATE, EXTRACT(), AGE(), TO_CHAR()
+- Operation : NOW, TIMEOFDAY
+
+- EXTRACT() : Allow you to extract sub component/value from full date time using YEAR, MONTH, DAY, WEEK, QUARTER
+- More about patter used for TO_CHAR() function : https://www.postgresql.org/docs/12/functions-formatting.html
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+1. EXTRACT()
+
+- Obtain sub component
+
+Query : EXTRACT(YEAR FROM date_col)
+
+Example : 
+select * from payment;
+select EXTRACT(year from payment_date) from payment;
+select EXTRACT(year from payment_date) as my_year from payment;
+select EXTRACT(month from payment_date) from payment;
+select EXTRACT(day from payment_date) from payment;
+select EXTRACT(quarter from payment_date) from payment;
+select EXTRACT(week from payment_date) from payment;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+2. AGE()
+
+- Calculate current age of given timestamp with year day & time
+
+Query : AGE(date_col)
+
+Example : 
+AGE(2016-05-01)
+Output : 10 Year 1 month 3 days 01:23:22:123
+
+select * from payment;
+select AGE(payment_date) from payment;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+3. TO_CHAR()
+
+- covert any data into string format
+
+Query : TO_CHAR(date_col,'mm-dd-yyyy')
+
+Example :
+select * from payment;
+select TO_CHAR(payment_date,'mm:dd:yyyy') from payment;
+select TO_CHAR(payment_date,'MONTH - yyyy') from payment;
+select TO_CHAR(payment_date,'MONTH    YYYY') from payment;
+select TO_CHAR(payment_date,'mon/dd/yyyy') as my_date from payment;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* Challenge
+
+1. During which months did payments occur? Format your answer to return back the full month name.
+Query : select distinct TO_CHAR(payment_date,'MONTH') from payment;
+
+
+2. How many payments occurred on a Monday?
+Query : select COUNT(*) from payment where EXTRACT(DOW from payment_date) = 1;
+- DOW : is return index of week starting from Sunday as 0
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* Mathematical Operation and Functions
+
+- Lots of operation and function available you can explore official documentation
+
+
+Example : 
+select * from film;
+select rental_rate/replacement_cost from film;
+select ROUND(rental_rate/replacement_cost,4) from film;
+select ROUND(rental_rate/replacement_cost,4) * 100 as pecentage_cost from film;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* String Functions & Operators
+
+- Lots of operation and function available you can explore official documentation
+
+Example : 
+select * from customer;
+select length(first_name) from customer;
+select first_name || last_name from customer;
+select first_name || ' ' || last_name from customer;
+select first_name || ' ' || last_name as full_name from customer;
+select UPPER(first_name) || ' ' || UPPER(last_name) as full_name from customer;
+select UPPER(first_name || ' ' || last_name) as full_name from customer;
+
+select first_name || last_name || '@gmail.com' from customer;
+select left(first_name,1) || last_name || '@gmail.com' from customer;
+select LOWER(left(first_name,1) || last_name || '@gmail.com') from customer;
+select LOWER(left(first_name,1) || last_name || '@gmail.com') as custom_email from customer;
+select LOWER(left(first_name,1)) || LOWER(last_name) || '@gmail.com' as custom_email from customer;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* SubQuery
+
+- Executing another query for first query results
+- Use conditions when their is single output of subquery
+
+Query : SELECT col_names FROM table_name WHERE EXISTS/conditions (SELECT col_names FROM table_names WHERE conditions)
+
+Examples :
+select * from film;
+select AVG(rental_rate) from film;
+select title, rental_rate from film where rental_rate > (select AVG(rental_rate) from film);
+
+select * from rental;
+select * from inventory;
+select * from rental where rental_date between '2005-05-29' and '2005-05-30';
+select inventory.film_id from rental inner join inventory on inventory.inventory_id = rental.inventory_id where rental_date between '2005-05-29' and '2005-05-30';
+
+select film_id, title from film where film_id in(select inventory.film_id from rental inner join inventory on inventory.inventory_id = rental.inventory_id 
+where rental_date between '2005-05-29' and '2005-05-30');
+
+select film_id, title from film where film_id in(select inventory.film_id from rental inner join inventory on inventory.inventory_id = rental.inventory_id 
+where rental_date between '2005-05-29' and '2005-05-30') order by film_id;
+
+select * from customer;
+select * from payment;
+select first_name, last_name from customer as c where exists (select * from payment as p where p.customer_id = c.customer_id and amount > 11);
+select first_name, last_name from customer as c where not exists (select * from payment as p where p.customer_id = c.customer_id and amount > 11);
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* Self Join
+
+- In this case table join itself, it is useful to comparing value in a column of rows within table
+- Here we creates 2 alias on same table with diffrent name
+
+Query : SELECT table_1.col, table_2.col FROM table_name AS table_1 JOIN table_name AS table_2 on table_1.some_col = table_2.some_col;
+
+Example : 
+select * from film;
+select f1.title, f2.title, f1.length from film as f1 inner join film as f2 on f1.film_id = f2.film_id and f1.length = f2.length;
+select f1.title, f2.title, f1.length from film as f1 inner join film as f2 on f1.film_id != f2.film_id and f1.length = f2.length;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* Assessment Test 2
+
+- Need to restore data using command : pg_restore -U abbas -d exercises --no-owner exercises.tar
+
+1. How can you retrieve all the information from the cd.facilities table?
+Query : select * from cd.facilities;
+
+2. You want to print out a list of all of the facilities and their cost to members. How would you retrieve a list of only facility names and costs?
+Query:
+select * from cd.facilities;
+select name,membercost from cd.facilities;
+
+3. How can you produce a list of facilities that charge a fee to members
+Query:
+select * from cd.facilities;
+select * from cd.facilities where membercost > 0;
+
+4. How can you produce a list of facilities that charge a fee to members, and that fee is less than 1/50th of the monthly maintenance cost? 
+   Return the facid, facility name, member cost, and monthly maintenance of the facilities in question.
+Query:
+select * from cd.facilities;
+select facid, name, membercost, monthlymaintenance from cd.facilities where membercost > 0 and membercost < (monthlymaintenance / 50);
+
+5. How can you produce a list of all facilities with the word 'Tennis' in their name?
+Query:
+select * from cd.facilities;
+select * from cd.facilities where name like '%Tennis%';
+
+6. How can you retrieve the details of facilities with ID 1 and 5? Try to do it without using the OR operator.
+Query:
+select * from cd.facilities;
+select * from cd.facilities where facid in(1,5);
+
+7. How can you produce a list of members who joined after the start of September 2012? Return the memid, surname, firstname, and joindate of the members in question.
+Query:
+select * from cd.members;
+select memid, surname, firstname, joindate from cd.members where joindate >= '2012-09-01';
+
+8. How can you produce an ordered list of the first 10 surnames in the members table? The list must not contain duplicates.
+Query:
+select * from cd.members;
+select distinct surname from cd.members order by surname limit 10;
+
+9. You'd like to get the signup date of your last member. How can you retrieve this information?
+Query:
+select * from cd.members;
+select joindate from cd.members order by joindate desc limit 1;
+select MAX(joindate) from cd.members;
+
+10. Produce a count of the number of facilities that have a cost to guests of 10 or more.
+Query:
+select * from cd.facilities;
+select COUNT(*) from cd.facilities where guestcost >= 10;
+
+11. Produce a list of the total number of slots booked per facility in the month of September 2012. Produce an output table consisting of facility id and slots, 
+    sorted by the number of slots.
+Query:
+select * from cd.bookings;
+select facid, SUM(slots) from cd.bookings where starttime >= '2012-09-01' and starttime <= '2012-10-01' group by facid order by SUM(slots);
+
+12. Produce a list of facilities with more than 1000 slots booked. Produce an output table consisting of facility id and total slots, sorted by facility id.
+Query:
+select * from cd.bookings;
+select facid, SUM(slots) from cd.bookings group by facid having SUM(slots) > 1000 order by facid;
+
+13. How can you produce a list of the start times for bookings for tennis courts, for the date '2012-09-21'? 
+    Return a list of start time and facility name pairings, ordered by the time.
+Query:
+select * from cd.facilities;
+select * from cd.bookings;
+select starttime, name from cd.facilities inner join cd.bookings on cd.bookings.facid = cd.facilities.facid where name like 'Tennis Court%' 
+and starttime >= '2012-09-21' and starttime < '2012-09-22' order by starttime;
+
+select starttime, name from cd.facilities inner join cd.bookings on cd.bookings.facid = cd.facilities.facid where cd.facilities.facid in(0,1) 
+and starttime >= '2012-09-21' and starttime < '2012-09-22' order by starttime;
+
+14. How can you produce a list of the start times for bookings by members named 'David Farrell'?
+Query:
+select * from cd.bookings;
+select * from cd.members;
+select starttime from cd.members inner join cd.bookings on cd.members.memid = cd.bookings.memid where firstname ='David' and surname='Farrell';
+ 
+============================================================================================================================================================
+
+** Creating Database And Table
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 ============================================================================================================================================================
 
