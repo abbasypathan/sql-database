@@ -704,6 +704,34 @@ select starttime from cd.members inner join cd.bookings on cd.members.memid = cd
 ============================================================================================================================================================
 
 ** Creating Database And Table
+
+* Data Type
+
+A. Boolean : true or false or null
+B. Character : char, varchar, text -> CHAR(n),VARCHAR(n), TEXT
+C. Numeric : integer, floating-point number -> SMALLINT, INTEGER / INT,BIGINT, DECIMAL(p, s) / NUMERIC(p, s), REAL, DOUBLE PRECISION
+D. Temporal : date, time, timestamp, interval
+E. Date & Time : DATE,TIME, TIMESTAMP, TIMESTAMPTZ 
+F. Array : Array of string, numbers etc.
+G. JSON/JSONB (better, faster, indexed)
+H. Hstore : Key value pair
+I. Special type such as network address and geometric data
+J. UUID (Universally Unique Identifier)
+K. Auto Increment : SERIAL, BIGSERIAL
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+* Primary & Foregin Keys
+
+- Primary Key : Unique identifier of row/data
+- Foreign Key : Field or group of field in a table that uniquely identifies a row in another table. It reference to another table primary key
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* Constraints
+
+-
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 ============================================================================================================================================================
 
