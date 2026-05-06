@@ -1205,6 +1205,39 @@ DROP VIEW cus_info;
 - We can import .csv or other type of file as table, we need to crete table with exact same column name first
 ============================================================================================================================================================
 
+** Custom Function In PostgreSQL
+
+1. 
+
+CREATE OR REPLACE FUNCTION calculate_final(price NUMERIC, discount NUMERIC)
+RETURNS NUMERIC AS $$
+BEGIN
+    RETURN price - COALESCE(discount, 0);
+END;
+$$ LANGUAGE plpgsql;
+
+Use : SELECT item, calculate_final(price, discount) AS final FROM items;
+
+2. 
+
+-- Step 1: state function
+CREATE OR REPLACE FUNCTION my_sum_func(total NUMERIC, val NUMERIC)
+RETURNS NUMERIC AS $$
+BEGIN
+    RETURN total + val;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Step 2: aggregate
+CREATE AGGREGATE my_sum(NUMERIC) (
+    SFUNC = my_sum_func,
+    STYPE = NUMERIC,
+    INITCOND = 0
+);
+
+Use : SELECT my_sum(price) FROM items;
+============================================================================================================================================================
+
 
 
 
