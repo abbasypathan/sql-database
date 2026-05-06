@@ -727,10 +727,242 @@ K. Auto Increment : SERIAL, BIGSERIAL
 
 * Constraints
 
--
+- Rules enforced on data column
+- Used to prevent invalid data from being entered
+- Column Constraints : Applied on column
+- Table Constraints : Applied on entier table
+- Column Constraints : NOT NULL, UNIQUE, PRIMARY KEY, FOREIGN KEY, CHECK, EXCLUSION
+- Table Constraints : CHECK(condition), REFERENCES, UNIQUE(col_list),PRIMARY KEY(col_list), 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+* CREATE Table
+
+Query : 
+CREATE TABLE table_name(
+	col_name data_type col_constraint,
+	col_name data_type col_constraint,
+	table_constraint table_constraint
+) INHERITS existing_table_name;
+
+Example : 
+CREATE TABLE account(
+	user_id SERIAL PRIMARY KEY,
+	username VARCHAR(50) UNIQUE NOT NULL,
+	password VARCHAR(50) NOT NULL,
+	email VARCHAR(250) UNIQUE NOT NULL,
+	created_on TIMESTAMP NOT NULL,
+	last_login TIMESTAMP
+);
+
+CREATE TABLE job(
+	job_id SERIAL PRIMARY KEY,
+	job_name VARCHAR(200) UNIQUE NOT NULL
+);
+
+CREATE TABLE account_job(
+	user_id INTEGER REFERENCES account(user_id),
+	job_id INTEGER REFERENCES job(job_id),
+	hire_date TIMESTAMP 
+);
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* INSERT
+
+Query : 
+INSERT INTO table_name(col1,col2,...) VALUES (value1,value2,...), (value1,value2,...);
+INSERT INTO table_name(col1,col2,...) SELECT col1,col2,... FROM another_table WHERE conditions;
+
+Example : 
+SELECT * FROM account;
+INSERT INTO account(username,password,email,created_on) 
+VALUES ('Jose','password','jose@gmail.com',CURRENT_TIMESTAMP);
+
+SELECT * FROM job;	
+INSERT INTO job(job_name) VALUES ('Astronaut');
+INSERT INTO job(job_name) VALUES ('President');
+
+SELECT * FROM account_job;
+INSERT INTO account_job(user_id,job_id,hire_date) VALUES(1,1,CURRENT_TIMESTAMP);
+INSERT INTO account_job(user_id,job_id,hire_date) VALUES(10,10,CURRENT_TIMESTAMP); //Expected error as user_id & job_id doesn't exist
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* UPDATE
+
+- RETURNING : Returns updated column
+
+Query :
+UPDATE table_name SET col1 = value1, col2 = value2, ... WHERE conditions;
+UPDATE table_name SET col = another_col
+UPDATE table1 SET original_col = table2.new_col FROM table2 WHERE table1.id = table2.id;
+
+Example :
+SELECT * FROM account;
+UPDATE account SET last_login = CURRENT_TIMESTAMP;
+UPDATE account SET last_login = created_on;
+
+SELECT * FROM account_job;
+UPDATE account_job SET hire_date = account.created_on FROM account WHERE account.user_id = account_job.user_id;
+
+UPDATE account SET last_login = CURRENT_TIMESTAMP RETURNING email,last_login,created_on;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* DELETE
+
+- RETURNING : Returns deleted column
+
+Query :
+DELETE FROM table_name WHERE condions;
+DELETE FROM table1 USING table1 WHERE table1.id = table2.id;
+
+Example :
+SELECT * FROM job;
+INSERT INTO job(job_name) VALUES ('Xyz');
+
+DELETE FROM job WHERE job_name = 'Xyz' RETURNING *;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* ALTER
+
+- Changing an existing table structure
+
+Query : 
+ALTER TABLE table_name action;
+ALTER TABLE table_name ADD COLUMN new_col data_type;
+ALTER TABLE table_name DROP COLUMN new_col;
+ALTER TABLE table_name ALTER COLUMN col_name SET DEFAULT value;
+ALTER TABLE table_name ALTER COLUMN col_name ADD constraint_name;
+
+Example : 
+
+CREATE TABLE information(
+	info_id SERIAL PRIMARY KEY,
+	title VARCHAR(500) NOT NULL,
+	person VARCHAR(50) NOT NULL UNIQUE
+);
+
+SELECT * FROM information;
+
+ALTER TABLE information RENAME TO new_info;
+
+SELECT * FROM new_info;
+
+ALTER TABLE new_info RENAME COLUMN person TO people;
+
+INSERT INTO new_info(title) VALUES('Some title');
+
+ALTER TABLE new_info ALTER COLUMN people DROP NOT NULL;
+
+INSERT INTO new_info(title) VALUES('Some title');
+
+SELECT * FROM new_info;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* DROP
+
+- Allows us to completely remove column
+- Cannot drop depends columns using DROP, We can use CASCADE to do the same
+
+Query :
+ALTER TABLE table_name DROP COLUMN col_name1, DROP COLUMN col_name2;
+ALTER TABLE table_name DROP COLUMN IF EXISTS col_name;
+ALTER TABLE table_name DROP COLUMN col_name CASCADE;
+
+Example : 
+SELECT * FROM new_info;
+ALTER TABLE new_info DROP COLUMN people;
+ALTER TABLE new_info DROP COLUMN IF EXISTS people;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* CHECK Constraints
+
+- Allow us to create more customized constraints that adhere to a certain conditions
+
+Query : CHECK(condotion)
+
+Example : 
+CREATE TABLE employee(
+	emp_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	lats_name VARCHAR(50) NOT NULL,
+	birthdate DATE CHECK(birthdate > '1900-01-01'),
+	hire_date DATE CHECK(hire_date > birthdate),
+	salary INTEGER CHECK(salary > 0)
+);
+
+INSERT INTO employee(first_name,lats_name,birthdate,hire_date,salary)
+VALUES('Jose','Doe','1899-11-03','2010-01-01',100); -- Expected error for birthdate
+
+INSERT INTO employee(first_name,lats_name,birthdate,hire_date,salary)
+VALUES('Jose','Doe','1999-11-03','2010-01-01',100);
+
+INSERT INTO employee(first_name,lats_name,birthdate,hire_date,salary)
+VALUES('Sammy','Smith','1999-11-03','2010-01-01',-100); --  Expected error for salary
+
+INSERT INTO employee(first_name,lats_name,birthdate,hire_date,salary)
+VALUES('Sammy','Smith','1999-11-03','2010-01-01',1100);
+
+SELECT * FROM employee;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* Assessment Test 3
+
+Create a new database called "School" this database should have two tables: teachers and students.
+
+The students table should have columns for student_id, first_name,last_name, homeroom_number, phone,email, and graduation year.
+
+The teachers table should have columns for teacher_id, first_name, last_name,
+
+homeroom_number, department, email, and phone.
+
+The constraints are mostly up to you, but your table constraints do have to consider the following:
+
+We must have a phone number to contact students in case of an emergency.
+
+We must have ids as the primary key of the tables
+
+Phone numbers and emails must be unique to the individual.
+
+Once you've made the tables, insert a student named Mark Watney (student_id=1) who has a phone number of 777-555-1234 and doesn't have an email. H
+e graduates in 2035 and has 5 as a homeroom number.
+
+Then insert a teacher names Jonas Salk (teacher_id = 1) who as a homeroom number of 5 and is from the Biology department. 
+His contact info is: jsalk@school.org and a phone number of 777-555-4321.
+
+Query :
+CREATE TABLE students(
+	student_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	homeroom_number INTEGER,
+	phone VARCHAR(50) NOT NULL UNIQUE,
+	email VARCHAR(250) UNIQUE,
+	graduation_year INTEGER
+);
+
+CREATE TABLE teachers(
+	teacher_id SERIAL PRIMARY KEY,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+	homeroom_number INTEGER,
+	department VARCHAR(250),
+	email VARCHAR(250) UNIQUE,
+	phone VARCHAR(50) UNIQUE
+);
+
+
+INSERT INTO students(first_name,last_name,homeroom_number,phone,graduation_year)
+VALUES('Mark','Watney',5,'777-555-1234',2035);
+
+SELECT * FROM students;
+
+INSERT INTO teachers(first_name,last_name,homeroom_number,department,email,phone)
+VALUES('Jonas','Salk',5,'Biology','jsalk@school.org','777-555-4321');
+
+SELECT * FROM teachers;
+
+============================================================================================================================================================
+
+** Conditional Expressions & Procedures
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
 ============================================================================================================================================================
