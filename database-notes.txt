@@ -964,7 +964,245 @@ SELECT * FROM teachers;
 
 ** Conditional Expressions & Procedures
 
+- Add logic to our commands
+
+* CASE
+
+- This is similar to if/else statement
+
+A. General CASE
+
+Query : 
+CASE WHEN condition1 THEN resul1 WHEN condition2 THEN result2 ELSE some_other_result END;
+
+Example : 
+SELECT a, CASE WHEN a=1 THEN 'One' WHEN a=2 THEN 'Two' ELSE 'Other' END FROM table_name;
+
+SELECT * FROM customer;
+SELECT customer_id, 
+CASE  
+	WHEN(customer_id <= 100) THEN 'Premium'
+	WHEN(customer_id BETWEEN 100 AND 200) THEN 'Plus'
+	ELSE 'Normal'
+END AS customer_class
+FROM customer ORDER BY customer_id;
+-----------------------------------------------------------------------------------------------------
+B. Expression CASE
+
+- First evaluates expression then compare value
+
+Query :
+CASE expression WHEN condition1 THEN resul1 WHEN condition2 THEN result2 ELSE some_other_result END;
+
+Example : 
+SELECT expression CASE WHEN a=1 THEN 'One' WHEN a=2 THEN 'Two' ELSE 'Other' END FROM table_name;
+
+SELECT * FROM customer;
+
+SELECT customer_id, 
+CASE  customer_id
+	WHEN 2 THEN 'Winner'
+	WHEN 5 THEN '2nd Place'
+	ELSE 'Normal'
+END AS raffle_result
+FROM customer ORDER BY customer_id;
+
+SELECT * FROM film;
+
+SELECT rental_rate,
+CASE rental_rate
+	WHEN 0.99 THEN 1
+	ELSE 0
+END
+FROM film;
+
+SELECT SUM(
+CASE rental_rate
+	WHEN 0.99 THEN 1
+	ELSE 0
+END
+) AS bargins,
+SUM(
+CASE rental_rate
+	WHEN 2.99 THEN 1
+	ELSE 0
+END
+) AS regular,
+SUM(
+CASE rental_rate
+	WHEN 4.99 THEN 1
+	ELSE 0
+END
+) AS premium
+FROM film;
 ------------------------------------------------------------------------------------------------------------------------------------------------------------
+* Challenge :
+
+1. We want to know and compare the various amounts of films we have per movie rating. Use CASE and the dvdrental database to re-create this table: r pg pg13
+Query : 
+SELECT SUM(
+CASE rating
+	WHEN 'R' THEN 1
+	ELSE 0
+END
+) AS r,
+SUM(
+CASE rating
+	WHEN 'PG' THEN 1
+	ELSE 0
+END
+) AS pg,
+SUM(
+CASE rating
+	WHEN 'PG-13' THEN 1
+	ELSE 0
+END
+) AS pg13
+FROM film;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* COALESCE
+
+- It accepts number of arguments and return first argument which is not null. If all null then return null
+
+Query : COALESCE(arg1,arg2...argn)
+
+Example :
+COALESCE(1,2) : Returns 1
+COALESCE(NULL,2,3) : Returns 2
+
+- SQL can't do subtraction of NULL value it will return NULL
+- SO we are giving 2 argument first is column name if it's null it will return 2nd value which is 0
+
++---------+--------------+---------+-----------+
+| item_id | item         | price   | discount  |
++---------+--------------+---------+-----------+
+| 1       | Laptop       | 50000   | 10        |
+| 2       | Mobile       | 20000   | NULL      |
+| 3       | Headphones   | 2000    | 15        |
++---------+--------------+---------+-----------+
+
+
+Without COALESCE Result : SELECT item,(price - discount) AS final FROM table;
++--------------+--------+
+| item         | final  |
++--------------+--------+
+| Laptop       | 49990  |
+| Mobile       | NULL   |
+| Headphones   | 1985   |
++--------------+--------+
+
+With COALESCE Result : SELECT item,(price - COALESCE(discount,0)) AS final FROM table;
+
++--------------+--------+
+| item         | final  |
++--------------+--------+
+| Laptop       | 49990  |
+| Mobile       | 20000  |
+| Headphones   | 1985   |
++--------------+--------+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* CAST
+
+- Convert one data type into another
+
+Query:
+CAST Function : SELECT CAST('5' AS INTEGER)
+CAST Operator : SELECT '5' :: INTEGER
+
+Example : 
+SELECT CAST('5' AS INTEGER) AS new_int;
+SELECT '5'::INTEGER AS new_int;
+
+SELECT * FROM rental;
+SELECT CAST(inventory_id AS VARCHAR) FROM rental;
+SELECT CHAR_LENGTH(CAST(inventory_id AS VARCHAR)) FROM rental;
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+* NULLIF
+
+- It takes 2 input
+- Returns NULL if both value are equals else return first input
+
+Query : NULLIF(value1,value2);
+
+Example : 
+NULLIF(10,10) : Returns NULL
+NULLIF(10,12) : Returns 10
+
+CREATE TABLE depts(
+	first_name VARCHAR(50),
+	deprtment VARCHAR(50)
+);
+
+INSERT INTO depts(first_name,deprtment)
+VALUES('Vinton','A'),('Lauren','A'),('Clair','B');
+
+SELECT * FROM depts;
+
+SELECT (
+SUM(CASE WHEN deprtment='A' THEN 1 ELSE 0 END)/
+SUM(CASE WHEN deprtment='B' THEN 1 ELSE 0 END)
+) AS deprtment_ratio FROM depts;
+
+DELETE FROM depts WHERE deprtment='B';
+
+SELECT * FROM depts;
+
+SELECT (
+SUM(CASE WHEN deprtment='A' THEN 1 ELSE 0 END)/
+SUM(CASE WHEN deprtment='B' THEN 1 ELSE 0 END)
+) AS deprtment_ratio FROM depts; -- Expected error as dividing by 0
+
+- With NULLIF 
+
+SELECT (
+SUM(CASE WHEN deprtment='A' THEN 1 ELSE 0 END)/
+NULLIF(SUM(CASE WHEN deprtment='B' THEN 1 ELSE 0 END),0)
+) AS deprtment_ratio FROM depts;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+* Views
+
+- If we are running some sort of query again and again for that we can create View and execute it by simple call
+- View is database object that is of a stored query
+- It is virtual table we can say
+
+Query: 
+CREATE VIEW virtual_table_name AS result_query;
+CREATE OR REPLACE VIEW virtual_table_name AS result_query;
+
+Example : 
+SELECT * FROM address;
+SELECT * FROM customer;
+
+SELECT first_name, last_name, address FROM customer INNER JOIN address ON customer.address_id = address.address_id;
+
+CREATE VIEW customer_info AS SELECT first_name, last_name, address FROM customer INNER JOIN address ON customer.address_id = address.address_id;
+
+SELECT * FROM customer_info;
+
+CREATE OR REPLACE VIEW customer_info AS SELECT first_name, last_name, address, district
+FROM customer INNER JOIN address ON customer.address_id = address.address_id;
+
+SELECT * FROM customer_info;
+
+DROP VIEW customer_info;
+
+DROP VIEW IF EXISTS customer_info;
+
+ALTER VIEW customer_info RENAME TO cus_info;
+
+SELECT * FROM cus_info; 
+
+DROP VIEW cus_info;
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+* Import & Export Data
+
+- We can import .csv or other type of file as table, we need to crete table with exact same column name first
 ============================================================================================================================================================
 
 
